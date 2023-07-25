@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  HP Trivia
 //
-//  Created by Admin on 2023-07-24.
+//  Created by Shriman on 2023-07-24.
 //
 
 import SwiftUI
@@ -14,6 +14,9 @@ struct ContentView: View {
     @State private var animateViewIn = false
     
     @State private var audioPlayer:AVAudioPlayer!
+    @State private var showInstructionScreen = false
+    @State private var showSettingsScreen = false
+    @State private var playGame = false
     
     var body: some View {
         GeometryReader { geo in
@@ -41,14 +44,17 @@ struct ContentView: View {
                                     .font(.largeTitle)
                                     .imageScale(.large)
                                     .fontWeight(.bold)
+                                    .fontDesign(.serif)
                                 
                                 Text("Harry Potter")
                                     .font(.custom("Times", size: 45))
                                     .fontWeight(.semibold)
+                                    .fontDesign(.serif)
                                 
                                 Text("Trivia")
                                     .font(.custom("Times",size: 30))
                                     .fontWeight(.semibold)
+                                    .fontDesign(.serif)
                             }
                             .padding(.top,65)
                         }
@@ -58,19 +64,25 @@ struct ContentView: View {
                     Spacer()
                     
                     // Recent Scores Tracker
-                    VStack{
-                        Text("Recent Scores")
-                            .font(.title2)
+                    VStack {
                         
-                        Text("33")
-                        Text("27")
-                        Text("15")
-                    }
-                    .font(.title3)
-                    .padding(.horizontal)
-                    .foregroundColor(.white)
-                    .background(.black.opacity(0.7))
-                    .cornerRadius(15)
+                        if animateViewIn {
+                            VStack{
+                                Text("Recent Scores")
+                                    .font(.title2)
+                                
+                                Text("33")
+                                Text("27")
+                                Text("15")
+                            }
+                            .font(.title3)
+                            .padding(.horizontal)
+                            .foregroundColor(.white)
+                            .background(.black.opacity(0.7))
+                            .cornerRadius(15)
+                            .transition(.opacity)
+                        }
+                    }.animation(.linear(duration:1).delay(3),value:animateViewIn)
                     
                     Spacer()
                     
@@ -81,6 +93,7 @@ struct ContentView: View {
                             if(animateViewIn){
                                 Button{
                                     //Show instruction screen
+                                    showInstructionScreen.toggle()
                                 }label:{
                                     Image(systemName: "info.circle.fill")
                                         .font(.largeTitle)
@@ -90,12 +103,17 @@ struct ContentView: View {
                             }
                         }
                         .animation(.easeOut(duration: 0.7).delay(1.7), value:animateViewIn)
+                        .sheet(isPresented: $showInstructionScreen) {
+                            Instructions()
+                        }
                         Spacer()
                         
                         VStack{
                             if(animateViewIn){
                                 Button(){
                                     //Click to start new game
+                                    playGame.toggle()
+                                    
                                 }label:{
                                     Text("Play")
                                         .font(.largeTitle)
@@ -105,6 +123,7 @@ struct ContentView: View {
                                         .background(.brown)
                                         .cornerRadius(15)
                                         .shadow(radius: 5)
+                                        .fontDesign(.serif)
                                 }
                                 //Animation effect: scale up and down
                                 .scaleEffect(scalePlayButton ? 1.2 : 1)
@@ -114,6 +133,11 @@ struct ContentView: View {
                                     }
                                 }
                                 .transition(.offset(y:geo.size.height/3))
+                                .fullScreenCover(isPresented: $playGame) {
+                                    Gameplay()
+                                }
+
+
                             }
                         }.animation(.easeOut(duration: 0.7).delay(0.2), value: animateViewIn)
                         
@@ -122,13 +146,17 @@ struct ContentView: View {
                             if(animateViewIn){
                                 Button{
                                     //Show settings screen
+                                    showSettingsScreen.toggle()
                                 }label:{
                                     Image(systemName: "gearshape.fill")
                                         .font(.largeTitle)
                                         .foregroundColor(.white)
-                                        .shadow(radius: 5)
+                                        .shadow(color:Color("maroon"),radius: 5)
                                 }
                                 .transition(.offset(x:geo.size.width/4))
+                                .sheet(isPresented: $showSettingsScreen) {
+                                    Settings()
+                                }
                             }
                         }.animation(.easeOut(duration: 0.7).delay(1.7), value:animateViewIn)
                         

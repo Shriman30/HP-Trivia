@@ -11,6 +11,10 @@
 		84BECADB2A6F54A100903517 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BECADA2A6F54A100903517 /* ContentView.swift */; };
 		84BECADD2A6F54A600903517 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84BECADC2A6F54A600903517 /* Assets.xcassets */; };
 		84BECAE02A6F54A700903517 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84BECADF2A6F54A700903517 /* Preview Assets.xcassets */; };
+		84F55E422A700F3000B789EF /* Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F55E412A700F3000B789EF /* Instructions.swift */; };
+		84F55E442A700F9200B789EF /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F55E432A700F9200B789EF /* Constants.swift */; };
+		84F55E462A70193900B789EF /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F55E452A70193900B789EF /* Settings.swift */; };
+		84F55E482A70228500B789EF /* Gameplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F55E472A70228500B789EF /* Gameplay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +23,10 @@
 		84BECADA2A6F54A100903517 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		84BECADC2A6F54A600903517 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84BECADF2A6F54A700903517 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		84F55E412A700F3000B789EF /* Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Instructions.swift; sourceTree = "<group>"; };
+		84F55E432A700F9200B789EF /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		84F55E452A70193900B789EF /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		84F55E472A70228500B789EF /* Gameplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gameplay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +61,10 @@
 			children = (
 				84BECAD82A6F54A100903517 /* HP_TriviaApp.swift */,
 				84BECADA2A6F54A100903517 /* ContentView.swift */,
+				84F55E472A70228500B789EF /* Gameplay.swift */,
+				84F55E412A700F3000B789EF /* Instructions.swift */,
+				84F55E452A70193900B789EF /* Settings.swift */,
+				84F55E432A700F9200B789EF /* Constants.swift */,
 				84BECADC2A6F54A600903517 /* Assets.xcassets */,
 				84BECADE2A6F54A700903517 /* Preview Content */,
 			);
@@ -138,7 +150,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				84BECADB2A6F54A100903517 /* ContentView.swift in Sources */,
+				84F55E482A70228500B789EF /* Gameplay.swift in Sources */,
+				84F55E422A700F3000B789EF /* Instructions.swift in Sources */,
 				84BECAD92A6F54A100903517 /* HP_TriviaApp.swift in Sources */,
+				84F55E442A700F9200B789EF /* Constants.swift in Sources */,
+				84F55E462A70193900B789EF /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
