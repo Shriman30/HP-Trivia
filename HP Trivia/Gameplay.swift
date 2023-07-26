@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct Gameplay: View {
     @Environment (\.dismiss) private var dismiss
+    @EnvironmentObject private var game: Game
+    @Namespace private var namespace
+    @State private var musicPlayer: AVAudioPlayer!
+    @State private var sfxPlayer: AVAudioPlayer!
     @State private var animateViewIn = false
     @State private var tappedCorrectAnswer = false
     @State private var hintWiggle = false
@@ -16,6 +21,10 @@ struct Gameplay: View {
     @State private var movePointsToScore = false
     @State private var revealHint = false
     @State private var revealBook = false
+    @State private var wrongAnswersTapped: [Int] = []
+    
+    
+    let tempAnswers = [true, false, false, false]
     
     var body: some View {
         GeometryReader{ geo in
@@ -49,9 +58,10 @@ struct Gameplay: View {
                                 .multilineTextAlignment(.center)
                                 .padding()
                                 .transition(.scale)
+                                .opacity(tappedCorrectAnswer ? 0.1 : 1)
                         }
                     }
-                    .animation(.easeInOut(duration:2),value:animateViewIn)
+                    .animation(.easeInOut(duration: animateViewIn ? 2 : 0),value:animateViewIn)
                     
                     Spacer()
                     
@@ -77,6 +87,7 @@ struct Gameplay: View {
                                         withAnimation(.easeOut(duration: 1)){
                                             revealHint = true
                                         }
+                                        playFlipSound()
                                     }
                                     .rotation3DEffect(.degrees(revealHint ? 1440 : 0), axis: (x: 0, y: 1, z: 0))
                                     .scaleEffect(revealHint ? 5 : 1)
@@ -84,6 +95,7 @@ struct Gameplay: View {
                                     .offset(x:revealHint ? geo.size.width/2 : 0)
                                 
                                     .overlay(
+                                        // The hint behind the icon
                                         Text("The boy who _____")
                                             .padding(.leading, 33)
                                             .minimumScaleFactor(0.5)
@@ -91,10 +103,13 @@ struct Gameplay: View {
                                             .opacity(revealHint ? 1 : 0)
                                             .scaleEffect(revealHint ? 1.33 : 1)
                                     )
+                                    .disabled(tappedCorrectAnswer) // disable if correct answer was selected
+                                    .opacity(tappedCorrectAnswer ? 0.1 : 1)
+
                             }
                             
                         }
-                        .animation(.easeOut(duration:0.7).delay(2), value: animateViewIn)
+                        .animation(.easeOut(duration:animateViewIn ? 0.7 : 0).delay(animateViewIn ? 2 : 0 ), value: animateViewIn)
                         
                         Spacer()
                         VStack{
@@ -120,6 +135,7 @@ struct Gameplay: View {
                                         withAnimation(.easeOut(duration: 1)){
                                             revealBook = true
                                         }
+                                        playFlipSound()
                                     }
                                     .rotation3DEffect(.degrees(revealBook ? 1440 : 0), axis: (x: 0, y: 1, z: 0))
                                     .scaleEffect(revealBook ? 5 : 1)
@@ -135,9 +151,11 @@ struct Gameplay: View {
                                             .opacity(revealBook ? 1 : 0)
                                             .scaleEffect(revealBook ? 1.33 : 1)
                                     )
+                                    .opacity(tappedCorrectAnswer ? 0.1 : 1)
+                                    .disabled(tappedCorrectAnswer)
                                 
                             }
-                        }.animation(.easeOut(duration:0.7).delay(2),value:animateViewIn)
+                        }.animation(.easeOut(duration:animateViewIn ? 0.7 : 0).delay(animateViewIn ? 2 : 0),value:animateViewIn)
                         
                         
                     }
@@ -146,18 +164,58 @@ struct Gameplay: View {
                     // MARK: Answers
                     LazyVGrid(columns: [GridItem(),GridItem()]) {
                         ForEach(1..<5){ i in
-                            VStack{
-                                if animateViewIn{
-                                    Text("Answer \(i)")
-                                        .minimumScaleFactor(0.5)
-                                        .multilineTextAlignment(.center)
-                                        .padding(10)
-                                        .frame(width: geo.size.width/2.15,height:80)
-                                        .background(.green.opacity(0.45))
-                                        .cornerRadius(30)
-                                        .transition(.scale)
-                                }
-                            }.animation(.easeOut(duration:1).delay(1.5), value: animateViewIn)
+                            // MARK: Correct Answer
+                            if tempAnswers[i-1] == true {
+                                VStack{
+                                    if animateViewIn{
+                                        if tappedCorrectAnswer == false{
+                                            Text("Answer \(i)")
+                                                .minimumScaleFactor(0.5)
+                                                .multilineTextAlignment(.center)
+                                                .padding(10)
+                                                .frame(width: geo.size.width/2.15,height:80)
+                                                .background(.green.opacity(0.45))
+                                                .cornerRadius(30)
+                                                .transition(.asymmetric(insertion: .scale, removal: .scale(scale: 5).combined(with: .opacity.animation(.easeOut(duration: 0.5)))))
+                                                .matchedGeometryEffect(id: "answer", in: namespace)
+                                                .onTapGesture {
+                                                    withAnimation(.easeOut(duration:1)){
+                                                        tappedCorrectAnswer = true
+                                                    }
+                                                    
+                                                    playCorrectSound()
+                                                }
+                                        }
+                                         
+                                    }
+                                }.animation(.easeOut(duration:animateViewIn ? 1 : 0).delay(animateViewIn ? 1.5 : 0), value: animateViewIn)
+                            }
+                            else{
+                                //MARK: Wrong Answers
+                                VStack{
+                                    if animateViewIn{
+                                        Text("Answer \(i)")
+                                            .minimumScaleFactor(0.5)
+                                            .multilineTextAlignment(.center)
+                                            .padding(10)
+                                            .frame(width: geo.size.width/2.15,height:80)
+                                            .background(wrongAnswersTapped.contains(i) ? .red.opacity(0.45) : .green.opacity(0.45))
+                                            .cornerRadius(30)
+                                            .transition(.scale)
+                                            .onTapGesture {
+                                                withAnimation(.easeOut(duration:1)){
+                                                    wrongAnswersTapped.append(i)
+                                                }
+                                                
+                                                playWrongSound()
+                                                giveWrongFeedback()
+                                            } 
+                                            .scaleEffect(wrongAnswersTapped.contains(i) ? 0.8 : 1)
+                                            .disabled(tappedCorrectAnswer || wrongAnswersTapped.contains(i)) // disable if already tapped
+                                            .opacity(tappedCorrectAnswer ? 0.1 : 1)
+                                    }
+                                }.animation(.easeOut(duration:animateViewIn ? 1 : 0).delay(animateViewIn ? 1.5 : 0), value: animateViewIn)
+                            }
                         }
                     }
                     Spacer()
@@ -195,7 +253,7 @@ struct Gameplay: View {
                                 .transition(.scale.combined(with: .offset(y:-geo.size.height/2)))
                         }
                     }
-                    .animation(.easeInOut(duration: 1).delay(1), value: tappedCorrectAnswer)
+                    .animation(.easeInOut(duration: tappedCorrectAnswer ? 1 : 0).delay(tappedCorrectAnswer ? 1 : 0), value: tappedCorrectAnswer)
 
                     Spacer()
                     if tappedCorrectAnswer{
@@ -208,6 +266,7 @@ struct Gameplay: View {
                             .cornerRadius(20)
                             .scaleEffect(2) // animation effect to scale it twice the size
                             .padding(.top,40)
+                            .matchedGeometryEffect(id: "answer", in: namespace)
                     }
                     
                     Group{
@@ -218,7 +277,16 @@ struct Gameplay: View {
                     VStack{
                         if tappedCorrectAnswer{
                             Button("Next Level >"){
-                                //TODO: Reset level for next question
+                                animateViewIn = false
+                                tappedCorrectAnswer = false
+                                revealHint = false
+                                revealBook = false
+                                movePointsToScore = false
+                                wrongAnswersTapped = []
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                                    animateViewIn = true
+                                }
                             }
                             .buttonStyle(.borderedProminent)
                             .tint(.blue.opacity(0.5))
@@ -232,7 +300,7 @@ struct Gameplay: View {
                             }
                         }
                     }
-                    .animation(.easeInOut(duration: 2.7).delay(2.7), value: tappedCorrectAnswer)
+                    .animation(.easeInOut(duration: tappedCorrectAnswer ? 2.7 : 0).delay(tappedCorrectAnswer ? 2.7 : 0), value: tappedCorrectAnswer)
 
                     Spacer()
                     Spacer()
@@ -244,13 +312,51 @@ struct Gameplay: View {
         .ignoresSafeArea()
         .onAppear{
             animateViewIn = true
-//            tappedCorrectAnswer = true
+            playMusic()
         }
+    }
+    
+    private func playMusic(){
+        let songs = ["let-the mystery-unfold", "spellcraft", "hiding-place-in-the-forest", "deep-in-the-dell"]
+        
+        let i = Int.random(in: 0...3)
+        
+        let sound = Bundle.main.path(forResource: songs[i], ofType: "mp3")
+        
+        musicPlayer = try! AVAudioPlayer(contentsOf: URL(filePath: sound!))
+        
+        musicPlayer.numberOfLoops = -1
+        musicPlayer.play()
+        musicPlayer.volume = 0.1
+    }
+    
+    private func playFlipSound(){
+        let sound = Bundle.main.path(forResource: "page-flip", ofType: "mp3")
+        sfxPlayer = try! AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound!))
+        sfxPlayer.play()
+    }
+    
+    private func playWrongSound(){
+        let sound = Bundle.main.path(forResource: "negative-beeps", ofType: "mp3")
+        sfxPlayer = try! AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound!))
+        sfxPlayer.play()
+    }
+    
+    private func playCorrectSound(){
+        let sound = Bundle.main.path(forResource: "magic-wand", ofType: "mp3")
+        sfxPlayer = try! AVAudioPlayer(contentsOf: URL(fileURLWithPath: sound!))
+        sfxPlayer.play()
+    }
+    
+    private func giveWrongFeedback(){
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
     }
 }
 
 struct Gameplay_Previews: PreviewProvider {
     static var previews: some View {
         Gameplay()
+            .environmentObject(Game())
     }
 }

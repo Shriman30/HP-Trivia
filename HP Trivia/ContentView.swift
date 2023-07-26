@@ -9,6 +9,8 @@ import SwiftUI
 import AVKit
 
 struct ContentView: View {
+    @EnvironmentObject private var game: Game
+    
     @State private var scalePlayButton = false
     @State private var moveBackgroundImage = false
     @State private var animateViewIn = false
@@ -112,6 +114,8 @@ struct ContentView: View {
                             if(animateViewIn){
                                 Button(){
                                     //Click to start new game
+                                    
+                                    game.startGame()
                                     playGame.toggle()
                                     
                                 }label:{
@@ -135,6 +139,7 @@ struct ContentView: View {
                                 .transition(.offset(y:geo.size.height/3))
                                 .fullScreenCover(isPresented: $playGame) {
                                     Gameplay()
+                                        .environmentObject(game)
                                 }
 
 
@@ -172,7 +177,7 @@ struct ContentView: View {
         }
         .ignoresSafeArea()
         .onAppear{
-            //            playAudio()
+//            playAudio()
             animateViewIn = true
         }
     }
@@ -183,12 +188,15 @@ struct ContentView: View {
         audioPlayer.numberOfLoops = -1
         audioPlayer.play()
     }
+    
+    private func filterQuestions(){
+        // TODO: create the store file
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack {
             ContentView()
-        }
+            .environmentObject(Game())
     }
 }
