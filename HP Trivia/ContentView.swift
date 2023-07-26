@@ -10,7 +10,7 @@ import AVKit
 
 struct ContentView: View {
     @EnvironmentObject private var game: Game
-    
+    @EnvironmentObject private var store: Store
     @State private var scalePlayButton = false
     @State private var moveBackgroundImage = false
     @State private var animateViewIn = false
@@ -114,7 +114,7 @@ struct ContentView: View {
                             if(animateViewIn){
                                 Button(){
                                     //Click to start new game
-                                    
+                                    filterQuestions() // with questions from books selected by the user
                                     game.startGame()
                                     playGame.toggle()
                                     
@@ -124,7 +124,7 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                         .padding(.horizontal,50)
                                         .padding(.vertical,7)
-                                        .background(.brown)
+                                        .background(store.books.contains(.active) ? .brown : .gray)
                                         .cornerRadius(15)
                                         .shadow(radius: 5)
                                         .fontDesign(.serif)
@@ -141,8 +141,9 @@ struct ContentView: View {
                                     Gameplay()
                                         .environmentObject(game)
                                 }
-
-
+                                .disabled(store.books.contains(.active) ? false : true) // disable play button if user has no books selected
+                                
+                                
                             }
                         }.animation(.easeOut(duration: 0.7).delay(0.2), value: animateViewIn)
                         
@@ -161,12 +162,25 @@ struct ContentView: View {
                                 .transition(.offset(x:geo.size.width/4))
                                 .sheet(isPresented: $showSettingsScreen) {
                                     Settings()
+                                        .environmentObject(store)
                                 }
                             }
                         }.animation(.easeOut(duration: 0.7).delay(1.7), value:animateViewIn)
                         
                         Spacer()
                     }.frame(width:geo.size.width)
+                    
+                    VStack{
+                        if animateViewIn{
+                            if store.books.contains(.active) == false{
+                                Text("No questions availabe. Go to Settings ⬆ ")
+                                    .multilineTextAlignment(.center)
+                                    .transition(.opacity)
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    .animation(.easeInOut.delay(3),value:animateViewIn)
                     
                     Spacer()
                     
@@ -190,13 +204,22 @@ struct ContentView: View {
     }
     
     private func filterQuestions(){
-        // TODO: create the store file
+        var books: [Int] = []
+        
+        for (index, status) in store.books.enumerated(){
+            if status == .active{
+                books.append(index + 1)
+            }
+        }
+        game.filterQuestions(to: books)
+        game.newQuestion()
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-            ContentView()
+        ContentView()
             .environmentObject(Game())
+            .environmentObject(Store())
     }
 }

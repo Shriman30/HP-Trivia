@@ -24,8 +24,6 @@ struct Gameplay: View {
     @State private var wrongAnswersTapped: [Int] = []
     
     
-    let tempAnswers = [true, false, false, false]
-    
     var body: some View {
         GeometryReader{ geo in
             ZStack{
@@ -38,13 +36,14 @@ struct Gameplay: View {
                     //MARK: Controls
                     HStack{
                         Button("End Game"){
+                            game.endGame()
                             dismiss()
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.red.opacity(0.5))
                         
                         Spacer()
-                        Text("Score: 33")
+                        Text("Score:\(game.gameScore)")
                     }
                     .padding()
                     .padding(.vertical,30)
@@ -52,7 +51,7 @@ struct Gameplay: View {
                     //MARK: Questions
                     VStack{
                         if animateViewIn {
-                            Text("Who is Harry Potter?")
+                            Text(game.currentQuestion.question)
                                 .fontDesign(.serif)
                                 .font(.system(size:30))
                                 .multilineTextAlignment(.center)
@@ -96,7 +95,7 @@ struct Gameplay: View {
                                 
                                     .overlay(
                                         // The hint behind the icon
-                                        Text("The boy who _____")
+                                        Text(game.currentQuestion.hint)
                                             .padding(.leading, 33)
                                             .minimumScaleFactor(0.5)
                                             .multilineTextAlignment(.center)
@@ -136,6 +135,8 @@ struct Gameplay: View {
                                             revealBook = true
                                         }
                                         playFlipSound()
+                                        // decrease score by 1
+                                        game.questionScore -= 1
                                     }
                                     .rotation3DEffect(.degrees(revealBook ? 1440 : 0), axis: (x: 0, y: 1, z: 0))
                                     .scaleEffect(revealBook ? 5 : 1)
@@ -143,7 +144,7 @@ struct Gameplay: View {
                                     .offset(x:revealBook ? -geo.size.width/2 : 0)
                                 
                                     .overlay(
-                                        Image("hp1")
+                                        Image("hp\(game.currentQuestion.book)")
                                             .resizable()
                                             .scaledToFit()
                                             .padding(.trailing, 33)
@@ -163,13 +164,13 @@ struct Gameplay: View {
                     
                     // MARK: Answers
                     LazyVGrid(columns: [GridItem(),GridItem()]) {
-                        ForEach(1..<5){ i in
+                        ForEach(Array(game.answers.enumerated()), id:\.offset){ i, answer in
                             // MARK: Correct Answer
-                            if tempAnswers[i-1] == true {
+                            if game.currentQuestion.answers[answer] == true {
                                 VStack{
                                     if animateViewIn{
                                         if tappedCorrectAnswer == false{
-                                            Text("Answer \(i)")
+                                            Text(answer)
                                                 .minimumScaleFactor(0.5)
                                                 .multilineTextAlignment(.center)
                                                 .padding(10)
@@ -184,6 +185,9 @@ struct Gameplay: View {
                                                     }
                                                     
                                                     playCorrectSound()
+                                                    DispatchQueue.main.asyncAfter(deadline:.now() + 3.5){
+                                                        game.correct()
+                                                    }
                                                 }
                                         }
                                          
@@ -194,7 +198,7 @@ struct Gameplay: View {
                                 //MARK: Wrong Answers
                                 VStack{
                                     if animateViewIn{
-                                        Text("Answer \(i)")
+                                        Text(answer)
                                             .minimumScaleFactor(0.5)
                                             .multilineTextAlignment(.center)
                                             .padding(10)
@@ -209,6 +213,7 @@ struct Gameplay: View {
                                                 
                                                 playWrongSound()
                                                 giveWrongFeedback()
+                                                game.questionScore -= 1
                                             } 
                                             .scaleEffect(wrongAnswersTapped.contains(i) ? 0.8 : 1)
                                             .disabled(tappedCorrectAnswer || wrongAnswersTapped.contains(i)) // disable if already tapped
@@ -229,7 +234,7 @@ struct Gameplay: View {
                     
                     VStack{
                         if tappedCorrectAnswer {
-                            Text("5") // score the user can get
+                            Text("\(game.questionScore)") // score the user can get
                                 .font(.largeTitle)
                                 .padding(.top,50)
                                 .transition(.offset(y:-geo.size.height/4))
@@ -257,7 +262,7 @@ struct Gameplay: View {
 
                     Spacer()
                     if tappedCorrectAnswer{
-                        Text("Answer 1") // Correct answer
+                        Text(game.correctAnswer) // Correct answer
                             .minimumScaleFactor(0.5)
                             .multilineTextAlignment(.center)
                             .padding(10)
@@ -283,6 +288,8 @@ struct Gameplay: View {
                                 revealBook = false
                                 movePointsToScore = false
                                 wrongAnswersTapped = []
+                                // generate next question
+                                game.newQuestion()
                                 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
                                     animateViewIn = true
@@ -312,7 +319,7 @@ struct Gameplay: View {
         .ignoresSafeArea()
         .onAppear{
             animateViewIn = true
-            playMusic()
+//            playMusic()
         }
     }
     
