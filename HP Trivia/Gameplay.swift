@@ -319,12 +319,15 @@ struct Gameplay: View {
         .ignoresSafeArea()
         .onAppear{
             animateViewIn = true
-//            playMusic()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3){
+                playMusic()
+            }
+
         }
     }
     
     private func playMusic(){
-        let songs = ["let-the mystery-unfold", "spellcraft", "hiding-place-in-the-forest", "deep-in-the-dell"]
+        let songs = ["let-the-mystery-unfold", "spellcraft", "hiding-place-in-the-forest", "deep-in-the-dell"]
         
         let i = Int.random(in: 0...3)
         

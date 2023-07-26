@@ -101,7 +101,7 @@ struct Settings: View {
                 Button("Done"){
                     dismiss()
                 }.doneButton()
-            }
+            }.foregroundColor(.black)
         }
     }
 }
